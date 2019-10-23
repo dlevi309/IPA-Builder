@@ -21,18 +21,20 @@ USAGE
 
 [[ $# = 0 ]] && usage
 
-commands=(ipalist optionslist audiomackpp)
+commands=(ipalist optionslist audiomackpp twitchpp)
 [[ ! " ${commands[@]} " =~ " $1 " ]] && usage
 
 function ipalist {
 	echo "IPAs must be in a folder called Ipas on your Desktop"
 	echo "IPAs:
-      Audiomack.ipa"
+      Audiomack.ipa
+      Twitch.ipa"
 }
 
 function optionslist {
 	echo "Options:
-      audiomackpp - Builds Audiomack++"
+      audiomackpp - Builds Audiomack++
+      twitchpp - Builds Twitch++"
 }
 
 function audiomackpp {
@@ -77,6 +79,50 @@ function audiomackpp {
 	zip -r -X ../"Audiomack++.ipa" * > /dev/null
 	cd ../; rm -r -f Audiomack > /dev/null
 	echo "Done Building Audiomack++"
+}
+
+function twitchpp {
+	echo "Building Twitch++"
+	cd ~/Desktop/Ipas
+	mkdir -p Build
+	cd Build
+	rm -r -f Twitch > /dev/null
+	echo "Extracting IPA"
+	unzip ../Twitch.ipa -d Twitch > /dev/null
+	cd "Twitch";
+	echo "Downloading Tweak"
+	curl -O "https://raw.githubusercontent.com/SarahH12099/SarahH12099.github.io/master/repo/debs/Twitch.deb"
+	echo "Downloading Tweak Dependencies"
+	curl -O "https://raw.githubusercontent.com/SarahH12099/Auto-IPA-Builder/master/Files/CydiaSubstrateFramework.zip"
+	curl -O "https://raw.githubusercontent.com/SarahH12099/Auto-IPA-Builder/master/Files/libloader.zip"
+	echo "Extracting Tweak And Tweak Dependencies"
+	dpkg-deb -R "Twitch.deb" Tweak > /dev/null
+	unzip CydiaSubstrateFramework.zip -d CydiaSubstrateFramework > /dev/null
+	unzip libloader.zip -d libloader > /dev/null
+	echo "Converting Tweak To Non-Jailbreak"
+	cd Tweak/Library/MobileSubstrate/DynamicLibraries
+	install_name_tool -change /Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate @rpath/CydiaSubstrate.framework/CydiaSubstrate "TwitchCrack.dylib" > /dev/null
+	echo "Moving Tweak And Tweak Dependencies"
+	cd ../../../../
+	mkdir -p Payload/Twitch.app/libloader > /dev/null
+	cp Tweak/Library/MobileSubstrate/DynamicLibraries/TwitchCrack.dylib Payload/Twitch.app/libloader > /dev/null
+	cp libloader/Sys.dylib Payload/Twitch.app > /dev/null
+	cp -R CydiaSubstrateFramework/Frameworks Payload/Twitch.app > /dev/null
+	echo "Injecting Tweak"
+	cd Payload/Twitch.app
+	install_name_tool -change /usr/lib/libSystem.B.dylib @executable_path/Sys.dylib "Twitch" > /dev/null
+	cd ../../
+	echo "Cleaning Left Over Files"
+	rm -r -f Twitch.deb > /dev/null
+	rm -r -f CydiaSubstrateFramework.zip > /dev/null
+	rm -r -f libloader.zip > /dev/null
+	rm -r -f Tweak > /dev/null
+	rm -r -f CydiaSubstrateFramework > /dev/null
+	rm -r -f libloader > /dev/null
+	echo "Packaging IPA"
+	zip -r -X ../"Twitch++.ipa" * > /dev/null
+	cd ../; rm -r -f Twitch > /dev/null
+	echo "Done Building Twitch++"
 }
 
 "$1" "${@:2}"
