@@ -21,19 +21,21 @@ USAGE
 
 [[ $# = 0 ]] && usage
 
-commands=(ipalist optionslist audiomackpp twitchpp)
+commands=(ipalist optionslist audiomackpp cercube twitchpp)
 [[ ! " ${commands[@]} " =~ " $1 " ]] && usage
 
 function ipalist {
 	echo "IPAs must be in a folder called Ipas on your Desktop"
 	echo "IPAs:
       Audiomack.ipa
-      Twitch.ipa"
+      Twitch.ipa
+      YouTube.ipa"
 }
 
 function optionslist {
 	echo "Options:
       audiomackpp - Builds Audiomack++
+      cercube - Builds Cercube for YouTube
       twitchpp - Builds Twitch++"
 }
 
@@ -79,6 +81,42 @@ function audiomackpp {
 	zip -r -X ../"Audiomack++.ipa" * > /dev/null
 	cd ../; rm -r -f Audiomack > /dev/null
 	echo "Done Building Audiomack++"
+}
+
+function cercube {
+	echo "Building Cercube for YouTube"
+	cd ~/Desktop/Ipas
+	mkdir -p Build
+	cd Build
+	rm -r -f YouTube > /dev/null
+	echo "Extracting IPA"
+	unzip ../YouTube.ipa -d YouTube > /dev/null
+	cd "YouTube";
+	echo "Downloading Tweak"
+	curl -O "https://raw.githubusercontent.com/SarahH12099/Auto-IPA-Builder/master/Tweaks/Cercube.zip"
+	echo "Downloading Tweak Dependencies"
+	curl -O "https://raw.githubusercontent.com/SarahH12099/Auto-IPA-Builder/master/Files/libloader.zip"
+	echo "Extracting Tweak And Tweak Dependencies"
+	unzip Cercube.zip -d Tweak > /dev/null
+	unzip libloader.zip -d libloader > /dev/null
+	echo "Moving Tweak And Tweak Dependencies"
+	mkdir -p Payload/YouTube.app/libloader > /dev/null
+	cp Tweak/Cercube.dylib Payload/YouTube.app/libloader > /dev/null
+	cp libloader/Sys.dylib Payload/YouTube.app > /dev/null
+	cp -R Tweak/Carida.bundle Payload/YouTube.app > /dev/null
+	echo "Injecting Tweak"
+	cd Payload/YouTube.app
+	install_name_tool -change /usr/lib/libSystem.B.dylib @executable_path/Sys.dylib "YouTube" > /dev/null
+	cd ../../
+	echo "Cleaning Left Over Files"
+	rm -r -f Cercube.zip > /dev/null
+	rm -r -f libloader.zip > /dev/null
+	rm -r -f Tweak > /dev/null
+	rm -r -f libloader > /dev/null
+	echo "Packaging IPA"
+	zip -r -X ../"Cercube for YouTube.ipa" * > /dev/null
+	cd ../; rm -r -f YouTube > /dev/null
+	echo "Building Cercube for YouTube"
 }
 
 function twitchpp {
