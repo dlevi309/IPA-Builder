@@ -21,7 +21,7 @@ USAGE
 
 [[ $# = 0 ]] && usage
 
-commands=(ipalist optionslist accuweatherpp audiomackpp cercube cercubepp twitchpp)
+commands=(ipalist optionslist accuweatherpp audiomackpp cercube cercubepp twitchpp zinitevipp)
 [[ ! " ${commands[@]} " =~ " $1 " ]] && usage
 
 function ipalist {
@@ -30,7 +30,8 @@ function ipalist {
 	  AccuWeather.ipa
       Audiomack.ipa
       Twitch.ipa
-      YouTube.ipa"
+      YouTube.ipa
+      ZiniTevi.ipa"
 }
 
 function optionslist {
@@ -39,7 +40,8 @@ function optionslist {
       audiomackpp - Builds Audiomack++
       cercube - Builds Cercube for YouTube
       cercubepp - Builds Cercube for YouTube++
-      twitchpp - Builds Twitch++"
+      twitchpp - Builds Twitch++
+      zinitevipp - Builds ZiniTevi++"
 }
 
 function accuweatherpp {
@@ -249,6 +251,50 @@ function twitchpp {
 	zip -r -X ../"Twitch++.ipa" * > /dev/null
 	cd ../; rm -r -f Twitch > /dev/null
 	echo "Done Building Twitch++"
+}
+
+function zinitevipp {
+	echo "Building ZiniTevi++"
+	cd ~/Desktop/Ipas
+	mkdir -p Build
+	cd Build
+	rm -r -f ZiniTevi > /dev/null
+	echo "Extracting IPA"
+	unzip ../ZiniTevi.ipa -d ZiniTevi > /dev/null
+	cd "ZiniTevi";
+	echo "Downloading Tweak"
+	curl -O "https://raw.githubusercontent.com/SarahH12099/SarahH12099.github.io/master/repo/debs/ZiniTevi.deb"
+	echo "Downloading Tweak Dependencies"
+	curl -O "https://raw.githubusercontent.com/SarahH12099/Auto-IPA-Builder/master/Files/CydiaSubstrateFramework.zip"
+	curl -O "https://raw.githubusercontent.com/SarahH12099/Auto-IPA-Builder/master/Files/libloader.zip"
+	echo "Extracting Tweak And Tweak Dependencies"
+	dpkg-deb -R "ZiniTevi.deb" Tweak > /dev/null
+	unzip CydiaSubstrateFramework.zip -d CydiaSubstrateFramework > /dev/null
+	unzip libloader.zip -d libloader > /dev/null
+	echo "Converting Tweak To Non-Jailbreak"
+	cd Tweak/Library/MobileSubstrate/DynamicLibraries
+	install_name_tool -change /Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate @rpath/CydiaSubstrate.framework/CydiaSubstrate "ZiniTeviCrack.dylib" > /dev/null
+	echo "Moving Tweak And Tweak Dependencies"
+	cd ../../../../
+	mkdir -p Payload/ZiniTevi.app/libloader > /dev/null
+	cp Tweak/Library/MobileSubstrate/DynamicLibraries/ZiniTeviCrack.dylib Payload/ZiniTevi.app/libloader > /dev/null
+	cp libloader/Sys.dylib Payload/ZiniTevi.app > /dev/null
+	cp -R CydiaSubstrateFramework/Frameworks Payload/ZiniTevi.app > /dev/null
+	echo "Injecting Tweak"
+	cd Payload/ZiniTevi.app
+	install_name_tool -change /usr/lib/libSystem.B.dylib @executable_path/Sys.dylib "ZiniTevi" > /dev/null
+	cd ../../
+	echo "Cleaning Left Over Files"
+	rm -r -f ZiniTevi.deb > /dev/null
+	rm -r -f CydiaSubstrateFramework.zip > /dev/null
+	rm -r -f libloader.zip > /dev/null
+	rm -r -f Tweak > /dev/null
+	rm -r -f CydiaSubstrateFramework > /dev/null
+	rm -r -f libloader > /dev/null
+	echo "Packaging IPA"
+	zip -r -X ../"ZiniTevi++.ipa" * > /dev/null
+	cd ../; rm -r -f ZiniTevi > /dev/null
+	echo "Done Building ZiniTevi++"
 }
 
 "$1" "${@:2}"
