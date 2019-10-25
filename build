@@ -21,14 +21,16 @@ USAGE
 
 [[ $# = 0 ]] && usage
 
-commands=(ipalist optionslist accuweatherpp audiomackpp cercube cercubepp twitchpp zinitevipp)
+commands=(ipalist optionslist accuweatherpp animegtpp audiomackpp cercube cercubepp flopp twitchpp zinitevipp)
 [[ ! " ${commands[@]} " =~ " $1 " ]] && usage
 
 function ipalist {
 	echo "IPAs must be in a folder called Ipas on your Desktop"
 	echo "IPAs:
 	  AccuWeather.ipa
+	  AnimeGT.ipa
       Audiomack.ipa
+      Flo.ipa
       Twitch.ipa
       YouTube.ipa
       ZiniTevi.ipa"
@@ -37,9 +39,11 @@ function ipalist {
 function optionslist {
 	echo "Options:
 	  accuweatherpp - Builds AccuWeather++
+	  animegtpp - Builds AnimeGT++
       audiomackpp - Builds Audiomack++
       cercube - Builds Cercube for YouTube
       cercubepp - Builds Cercube for YouTube++
+      flopp - Builds Flo++
       twitchpp - Builds Twitch++
       zinitevipp - Builds ZiniTevi++"
 }
@@ -86,6 +90,50 @@ function accuweatherpp {
 	zip -r -X ../"AccuWeather++.ipa" * > /dev/null
 	cd ../; rm -r -f AccuWeather > /dev/null
 	echo "Done Building AccuWeather++"
+}
+
+function animegtpp {
+	echo "Building AnimeGT++"
+	cd ~/Desktop/Ipas
+	mkdir -p Build
+	cd Build
+	rm -r -f AnimeGT > /dev/null
+	echo "Extracting IPA"
+	unzip ../AnimeGT.ipa -d AnimeGT > /dev/null
+	cd "AnimeGT";
+	echo "Downloading Tweak"
+	curl -O "https://raw.githubusercontent.com/SarahH12099/SarahH12099.github.io/master/repo/debs/AnimeGT.deb"
+	echo "Downloading Tweak Dependencies"
+	curl -O "https://raw.githubusercontent.com/SarahH12099/Auto-IPA-Builder/master/Files/CydiaSubstrateFramework.zip"
+	curl -O "https://raw.githubusercontent.com/SarahH12099/Auto-IPA-Builder/master/Files/libloader.zip"
+	echo "Extracting Tweak And Tweak Dependencies"
+	dpkg-deb -R "AnimeGT.deb" Tweak > /dev/null
+	unzip CydiaSubstrateFramework.zip -d CydiaSubstrateFramework > /dev/null
+	unzip libloader.zip -d libloader > /dev/null
+	echo "Converting Tweak To Non-Jailbreak"
+	cd Tweak/Library/MobileSubstrate/DynamicLibraries
+	install_name_tool -change /Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate @rpath/CydiaSubstrate.framework/CydiaSubstrate "AnimeGTCrack.dylib" > /dev/null
+	echo "Moving Tweak And Tweak Dependencies"
+	cd ../../../../
+	mkdir -p Payload/AnimeIOS2.app/libloader > /dev/null
+	cp Tweak/Library/MobileSubstrate/DynamicLibraries/AnimeGTCrack.dylib Payload/AnimeIOS2.app/libloader > /dev/null
+	cp libloader/Sys.dylib Payload/AnimeIOS2.app > /dev/null
+	cp -R CydiaSubstrateFramework/Frameworks Payload/AnimeIOS2.app > /dev/null
+	echo "Injecting Tweak"
+	cd Payload/AnimeIOS2.app
+	install_name_tool -change /usr/lib/libSystem.B.dylib @executable_path/Sys.dylib "AnimeIOS2" > /dev/null
+	cd ../../
+	echo "Cleaning Left Over Files"
+	rm -r -f AnimeGT.deb > /dev/null
+	rm -r -f CydiaSubstrateFramework.zip > /dev/null
+	rm -r -f libloader.zip > /dev/null
+	rm -r -f Tweak > /dev/null
+	rm -r -f CydiaSubstrateFramework > /dev/null
+	rm -r -f libloader > /dev/null
+	echo "Packaging IPA"
+	zip -r -X ../"AnimeGT++.ipa" * > /dev/null
+	cd ../; rm -r -f AnimeGT > /dev/null
+	echo "Done Building AnimeGT++"
 }
 
 function audiomackpp {
@@ -207,6 +255,50 @@ function cercubepp {
 	zip -r -X ../"Cercube for YouTube++.ipa" * > /dev/null
 	cd ../; rm -r -f YouTube > /dev/null
 	echo "Building Cercube for YouTube++"
+}
+
+function flopp {
+	echo "Building Flo++"
+	cd ~/Desktop/Ipas
+	mkdir -p Build
+	cd Build
+	rm -r -f Flo > /dev/null
+	echo "Extracting IPA"
+	unzip ../Flo.ipa -d Flo > /dev/null
+	cd "Flo";
+	echo "Downloading Tweak"
+	curl -O "https://raw.githubusercontent.com/SarahH12099/SarahH12099.github.io/master/repo/debs/Flo.deb"
+	echo "Downloading Tweak Dependencies"
+	curl -O "https://raw.githubusercontent.com/SarahH12099/Auto-IPA-Builder/master/Files/CydiaSubstrateFramework.zip"
+	curl -O "https://raw.githubusercontent.com/SarahH12099/Auto-IPA-Builder/master/Files/libloader.zip"
+	echo "Extracting Tweak And Tweak Dependencies"
+	dpkg-deb -R "Flo.deb" Tweak > /dev/null
+	unzip CydiaSubstrateFramework.zip -d CydiaSubstrateFramework > /dev/null
+	unzip libloader.zip -d libloader > /dev/null
+	echo "Converting Tweak To Non-Jailbreak"
+	cd Tweak/Library/MobileSubstrate/DynamicLibraries
+	install_name_tool -change /Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate @rpath/CydiaSubstrate.framework/CydiaSubstrate "FloCrack.dylib" > /dev/null
+	echo "Moving Tweak And Tweak Dependencies"
+	cd ../../../../
+	mkdir -p Payload/PeriodTracker.app/libloader > /dev/null
+	cp Tweak/Library/MobileSubstrate/DynamicLibraries/FloCrack.dylib Payload/PeriodTracker.app/libloader > /dev/null
+	cp libloader/Sys.dylib Payload/PeriodTracker.app > /dev/null
+	cp -R CydiaSubstrateFramework/Frameworks Payload/PeriodTracker.app > /dev/null
+	echo "Injecting Tweak"
+	cd Payload/PeriodTracker.app
+	install_name_tool -change /usr/lib/libSystem.B.dylib @executable_path/Sys.dylib "PeriodTracker" > /dev/null
+	cd ../../
+	echo "Cleaning Left Over Files"
+	rm -r -f Flo.deb > /dev/null
+	rm -r -f CydiaSubstrateFramework.zip > /dev/null
+	rm -r -f libloader.zip > /dev/null
+	rm -r -f Tweak > /dev/null
+	rm -r -f CydiaSubstrateFramework > /dev/null
+	rm -r -f libloader > /dev/null
+	echo "Packaging IPA"
+	zip -r -X ../"Flo++.ipa" * > /dev/null
+	cd ../; rm -r -f Flo > /dev/null
+	echo "Done Building Flo++"
 }
 
 function twitchpp {
